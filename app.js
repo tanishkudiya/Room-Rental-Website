@@ -22,20 +22,25 @@ const User = require("./models/user.js");
 const listingRouter = require("./routes/listing.js");
 const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
-// const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlustThree";
+const MongoStore = require("connect-mongo");
+const { error } = require("console");
 const dbUrl = process.env.ATLASDB_URL;
 
-main()
-    .then(() => {
-        console.log("Connected to MongoDB Atlas!");
-    })
-    .catch(err => {
-        console.error("Error connecting to MongoDB:", err);
-    });
 
-async function main() {
-    await mongoose.connect(dbUrl);
+async function main(){
+
+    try {
+       await mongoose.connect(dbUrl)
+        console.log("connection successful")
+    }
+    catch(error){
+        console.log("hatt laude")
+    }
 }
+
+main();
+
+
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -115,8 +120,21 @@ app.use(express.static(path.join(__dirname, "/public")));
 //     res.redirect("/listings");
 // }));
 
+const store = MongoStore.create({
+    mongoUrl: dbUrl,
+    crypto:{
+        secret:process.env.SECRET
+    },
+    touchAfter: 24*3600,
+})
+
+store.on("error",()=>{
+    console.log("Error in Mongo Session",err);
+})
+
 const sessionOptions = {
-    secret:"mysupersecretstring",
+    store,
+    secret:process.env.SECRET,
     resave:false, 
     saveUninitialized:true,
     cookie:{
@@ -125,6 +143,8 @@ const sessionOptions = {
         httpOnly: true,
     },
 }
+
+
 
 app.use(session(sessionOptions));
 app.use(flash());
