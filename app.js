@@ -34,7 +34,7 @@ async function main(){
         console.log("connection successful")
     }
     catch(error){
-        console.log("hatt laude")
+        console.log("Error",error);
     }
 }
 
